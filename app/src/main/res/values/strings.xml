@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Virtual Glasses</string>
+    <string name="catalogue_description">Take a look through the catalogue and pick a frame you would like to try on.</string>
+    <string name="gallery_description">Check out the photos of yourself you\'ve taken, tap to review them.</string>
+    <string name="gallery_deleteText">Click here to delete your saved photos (will only delete photos saved by this app)</string>
+    <string name="folder_name">/VirtualGlasses</string>
+
+    <string name="title_activity_try_on">TryOnActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
