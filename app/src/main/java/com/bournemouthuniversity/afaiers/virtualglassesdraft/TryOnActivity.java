@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.google.android.gms.vision.Tracker;
@@ -35,6 +36,8 @@ public class TryOnActivity extends AppCompatActivity {
 
     private CameraPreview m_camPreview;
 
+    private TryOnRenderer m_tryOnRenderer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,9 +49,10 @@ public class TryOnActivity extends AppCompatActivity {
 
         //get the camera preview
         m_camPreview = findViewById(R.id.cam_preview);
-
         createCameraSource();
 
+        TryOnSurface m_tryOnSurface = findViewById(R.id.try_on_surface);
+        m_tryOnRenderer = m_tryOnSurface.GetRenderer();
     }
 
     private void createCameraSource() {
@@ -70,12 +74,13 @@ public class TryOnActivity extends AppCompatActivity {
 
         FaceDetector detector = new FaceDetector.Builder(context)
                 .setClassificationType(FaceDetector.NO_CLASSIFICATIONS)
-                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setLandmarkType(FaceDetector.NO_LANDMARKS)
+                .setMode(FaceDetector.ACCURATE_MODE)
                 .setProminentFaceOnly(true)
                 .setTrackingEnabled(true)
                 .build();
 
-        detector.setProcessor(new MultiProcessor.Builder<>(new GraphicFaceTrackerFactory())
+        detector.setProcessor(new MultiProcessor.Builder<>(new FaceTrackerFactory())
                 .build());
 
         if(!detector.isOperational())
@@ -139,12 +144,21 @@ public class TryOnActivity extends AppCompatActivity {
     }
 
 
-    private class GraphicFaceTrackerFactory implements MultiProcessor.Factory<Face> {
+    private class FaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-            //TODO: make something happen when a new face is found
+
             Log.d(TAG, "Found Face!");
-            return null;
+            return new FaceTracker();
         }
+    }
+
+    private class FaceTracker extends Tracker<Face> {
+        @Override
+        public void onUpdate(Detector.Detections<Face> detections, Face face) {
+            super.onUpdate(detections, face);
+            m_tryOnRenderer.SetGlassesRotation(-face.getEulerY(), face.getEulerZ());
+        }
+
     }
 }
