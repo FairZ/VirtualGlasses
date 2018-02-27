@@ -83,12 +83,13 @@ public class TryOnActivity extends AppCompatActivity {
             Log.d(TAG, "FaceDetector dependencies have not yet been downloaded");
         }
 
-        //TODO: Maybe set preview size
-        m_camSource = new CameraSource.Builder(context,detector)
-                .setAutoFocusEnabled(true)
+        m_camSource = new CameraSource.Builder(context, detector)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
+                .setRequestedPreviewSize(1920, 1080)
                 .setRequestedFps(30.0f)
                 .build();
+
+        StartCameraSource();
     }
 
     @Override
@@ -118,6 +119,7 @@ public class TryOnActivity extends AppCompatActivity {
         int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
                 getApplicationContext());
         if (code != ConnectionResult.SUCCESS) {
+            Log.d(TAG, "don't have google play services");
             Dialog dlg =
                     GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
             dlg.show();

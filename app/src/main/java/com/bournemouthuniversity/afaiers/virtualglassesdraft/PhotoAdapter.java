@@ -1,6 +1,8 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +48,9 @@ class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.FrameViewHolder>{
 
     @Override
     public void onBindViewHolder(PhotoAdapter.FrameViewHolder holder, int position) {
-        holder.photoImage.setImageBitmap(BitmapFactory.decodeFile(photos.get(position).GetImagePath()));
+        //TODO: MAKE THUMBNAIL GETTING MORE EFFICIENT
+        Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(photos.get(position).GetImagePath()), 384,512);
+        holder.photoImage.setImageBitmap(thumbnail);
         holder.nameText.setText(photos.get(position).GetName());
     }
 
