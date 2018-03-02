@@ -40,8 +40,8 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
         GLES20.glViewport(0,0,width, height);
 
         float ratio = (float)width / height;
-        Matrix.perspectiveM(m_projectionMatrix,0,90,ratio,0.5f,10);
-        Matrix.setLookAtM(m_viewMatrix, 0, 0, 0, 1, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.perspectiveM(m_projectionMatrix,0,90,ratio,0.1f,10);
+        Matrix.setLookAtM(m_viewMatrix, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(m_VPMatrix, 0, m_projectionMatrix, 0, m_viewMatrix, 0);
     }
 
@@ -75,6 +75,7 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     }
 
     public void SetGlassesRotation(float _y, float _z){
-        Matrix.setRotateEulerM(m_modelMatrix,0,0,_y,_z);
+        Matrix.setRotateEulerM(m_modelMatrix,0,0,0,_z);
+        Matrix.rotateM(m_modelMatrix,0,_y,0,1,0);
     }
 }

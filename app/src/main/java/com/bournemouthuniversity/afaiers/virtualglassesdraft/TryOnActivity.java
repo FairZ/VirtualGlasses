@@ -13,6 +13,8 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 
 import android.content.pm.PackageManager;
+import android.graphics.PointF;
+import android.renderscript.Float2;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,8 +22,10 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.face.Landmark;
 
 import java.io.IOException;
+import java.util.List;
 
 public class TryOnActivity extends AppCompatActivity {
 
@@ -74,7 +78,7 @@ public class TryOnActivity extends AppCompatActivity {
 
         FaceDetector detector = new FaceDetector.Builder(context)
                 .setClassificationType(FaceDetector.NO_CLASSIFICATIONS)
-                .setLandmarkType(FaceDetector.NO_LANDMARKS)
+                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
                 .setMode(FaceDetector.ACCURATE_MODE)
                 .setProminentFaceOnly(true)
                 .setTrackingEnabled(true)
@@ -157,8 +161,65 @@ public class TryOnActivity extends AppCompatActivity {
         @Override
         public void onUpdate(Detector.Detections<Face> detections, Face face) {
             super.onUpdate(detections, face);
-            m_tryOnRenderer.SetGlassesRotation(-face.getEulerY(), face.getEulerZ());
-        }
+            Landmark leftEye = null;
+            Landmark rightEye = null;
+            Landmark noseBase = null;
 
+            //search through the landmarks and get the appropriate ones
+            List<Landmark> landmarks = face.getLandmarks();
+            for (Landmark landmark : landmarks)
+            {
+                switch(landmark.getType())
+                {
+                    case Landmark.LEFT_EYE:
+                        leftEye = landmark;
+                        break;
+                    case Landmark.RIGHT_EYE:
+                        rightEye = landmark;
+                        break;
+                    case Landmark.NOSE_BASE:
+                        noseBase = landmark;
+                        break;
+                }
+            }
+
+            float yRot = 180;
+            float zRot = 0;
+
+            //check that all landmarks have been found as they are required for the calculations
+            if(leftEye != null && rightEye != null && noseBase != null)
+            {
+                //set up a series of vectors from the three positions
+                Vector2D rightToLeft = new Vector2D(leftEye.getPosition().x - rightEye.getPosition().x,
+                                                    leftEye.getPosition().y - rightEye.getPosition().y);
+
+                Vector2D leftToNose = new Vector2D(noseBase.getPosition().x - leftEye.getPosition().x,
+                                                noseBase.getPosition().y - leftEye.getPosition().y);
+
+                Vector2D rightToNose = new Vector2D(noseBase.getPosition().x - rightEye.getPosition().x,
+                                                noseBase.getPosition().y - rightEye.getPosition().y);
+
+                //rotation in the z axis (towards camera) is equal to the angle between
+                //the normalised rightToLeft vector and the x axis
+                zRot = Vector2D.GetAngleBetween(rightToLeft.Normalise(), new Vector2D(1,0));
+
+                //GetAngleBetween does not determine which direction the angle is in
+                //so rotation is flipped when the left eye is higher than the right eye
+                if(leftEye.getPosition().y > rightEye.getPosition().y)
+                {
+                    zRot = -zRot;
+                }
+
+                //project ToNose vectors onto the eye-to-eye vector;
+                float rightToNoseProjected = Vector2D.CompOfBOnA(rightToLeft,rightToNose);
+
+                float ratio = rightToNoseProjected / rightToLeft.Magnitude();
+
+                yRot = (ratio - 0.5f) * 90.0f;
+
+            }
+
+            m_tryOnRenderer.SetGlassesRotation(-yRot, zRot);
+        }
     }
 }

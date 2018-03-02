@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.bournemouthuniversity.afaiers.virtualglassesdraft.TryOnActivity"
-    android:id="@+id/root_view">
+    android:id="@+id/root_view"
+    android:keepScreenOn="true">
 
     <com.bournemouthuniversity.afaiers.virtualglassesdraft.CameraPreview
         android:layout_width="match_parent"
