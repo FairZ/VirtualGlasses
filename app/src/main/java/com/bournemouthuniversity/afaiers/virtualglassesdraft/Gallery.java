@@ -72,9 +72,10 @@ public class Gallery extends Fragment {
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
-        for (int i = 0; i < files.length; i++)
-        {
-            photoList.add(new Photo(files[i].getName(),files[i].getAbsolutePath()));
+        if(files != null) {
+            for (int i = 0; i < files.length; i++) {
+                photoList.add(new Photo(files[i].getName(), files[i].getAbsolutePath()));
+            }
         }
     }
 
@@ -84,9 +85,10 @@ public class Gallery extends Fragment {
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
-        for (int i = 0; i < files.length; i++)
-        {
-            photoList.add(new Photo(files[i].getName(),files[i].getAbsolutePath()));
+        if(files!= null) {
+            for (int i = 0; i < files.length; i++) {
+                photoList.add(new Photo(files[i].getName(), files[i].getAbsolutePath()));
+            }
         }
         adapter.UpdateList(photoList);
         adapter.notifyDataSetChanged();

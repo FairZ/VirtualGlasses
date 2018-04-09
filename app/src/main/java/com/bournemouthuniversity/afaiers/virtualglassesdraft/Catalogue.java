@@ -1,6 +1,5 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -52,9 +51,9 @@ public class Catalogue extends Fragment {
     private void InitializeFrameList()
     {
         frameList = new ArrayList<Frame>();
-        frameList.add(new Frame("Model A", R.drawable.frame1));
-        frameList.add(new Frame("Model B", R.drawable.frame2));
-        frameList.add(new Frame("Model C", R.drawable.frame3));
+        frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1,0.5f));
+        frameList.add(new Frame("Model 2", R.drawable.catalogue_image_2,0.5f));
+        frameList.add(new Frame("Model 3", R.drawable.catalogue_image_3,0.5f));
     }
 
 

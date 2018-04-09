@@ -40,9 +40,17 @@ class FrameAdapter extends RecyclerView.Adapter<FrameAdapter.FrameViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(FrameAdapter.FrameViewHolder holder, int position) {
+    public void onBindViewHolder(final FrameAdapter.FrameViewHolder holder, final int position) {
         holder.frameImage.setImageResource(frames.get(position).GetImageRef());
         holder.nameText.setText(frames.get(position).GetName());
+        //Set click listener for each frame adapter to send the correct frame data to try on
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity main = (MainActivity) holder.itemView.getContext();
+                main.SwitchToCamera(frames.get(position).GetFrameData());
+            }
+        });
     }
 
     @Override

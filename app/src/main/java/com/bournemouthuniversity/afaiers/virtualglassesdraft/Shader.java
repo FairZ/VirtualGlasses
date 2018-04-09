@@ -14,8 +14,10 @@ public class Shader {
     private final String vertexShaderCode =
             "attribute vec4 vPosition;" +
                     "uniform mat4 MVP;" +
+                    "uniform vec4 framePosition;"+
                     "void main() {" +
-                    "  gl_Position = MVP * vPosition;" +
+                    "  vec4 position = MVP * vPosition;" +
+                    "  gl_Position = position + framePosition;" +
                     "}";
 
     private final String fragmentShaderCode =

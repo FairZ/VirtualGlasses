@@ -2,6 +2,7 @@ package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -25,8 +26,9 @@ class CameraPreview extends ViewGroup {
     private boolean m_startRequested;
     private boolean m_surfaceAvailable;
     private CameraSource m_camSource = null;
-    private int layoutWidth;
-    private int layoutHeight;
+    private int m_layoutWidth;
+    private int m_layoutHeight;
+    private TryOnSurface m_tryOnSurface = null;
 
     public CameraPreview(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -70,13 +72,18 @@ class CameraPreview extends ViewGroup {
                 height = size.getWidth();
             }
 
-            float childHeight = layoutHeight;
-            float childWidth = (( layoutHeight / (float) height) * (float) width);
-            
+            float childHeight = m_layoutHeight;
+            float childWidth = ((m_layoutHeight/(float)height) * (float) width);
+
+            DisplayMetrics DM = new DisplayMetrics();
+            ((TryOnActivity) m_context).getWindowManager().getDefaultDisplay().getMetrics(DM);
+            int screenWidthOffset = ((int)childWidth - DM.widthPixels)/2;
+
             for (int i = 0; i < getChildCount(); i++)
             {
-                getChildAt(i).layout(0,0,(int)childWidth,(int)childHeight);
+                getChildAt(i).layout( -screenWidthOffset, 0,(int)childWidth-screenWidthOffset,(int)childHeight);
             }
+            m_tryOnSurface.layout( -screenWidthOffset, 0,(int)childWidth-screenWidthOffset,(int)childHeight);
 
             m_startRequested = false;
         }
@@ -91,22 +98,25 @@ class CameraPreview extends ViewGroup {
         int width = 720;
         int height = 1280;
 
-        layoutWidth = right - left;
-        layoutHeight = bottom - top;
+        m_layoutWidth = right - left;
+        m_layoutHeight = bottom - top;
 
-        float childWidth = layoutWidth;
-        float childHeight = ((layoutWidth / (float) width) * (float) height);
+        Log.d(TAG,"layoutwidth: "+m_layoutWidth);
+        Log.d(TAG, "layoutHeight: "+m_layoutHeight);
 
-        if(childHeight > layoutHeight)
+        float childWidth = m_layoutWidth;
+        float childHeight = ((m_layoutWidth / (float) width) * (float) height);
+
+        if(childHeight > m_layoutHeight)
         {
-            childHeight = layoutHeight;
-            childWidth = (( layoutHeight / (float) height) * (float) width);
+            childHeight = m_layoutHeight;
+            childWidth = (( m_layoutHeight / (float) height) * (float) width);
         }
 
-        for (int i = 0; i < getChildCount(); i++)
-        {
-            getChildAt(i).layout(0,0,(int)childWidth,(int)childHeight);
+        for (int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).layout(0, 0, (int) childWidth, (int) childHeight);
         }
+
 
         try {
             StartIfReady();
@@ -136,5 +146,18 @@ class CameraPreview extends ViewGroup {
         public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
             m_surfaceAvailable = false;
         }
+    }
+
+    public void SetTryOnSurface(TryOnSurface _surface)
+    {
+        m_tryOnSurface = _surface;
+    }
+
+    public Vector2D GetCenterOfCam()
+    {
+        Size size = m_camSource.getPreviewSize();
+        float width = size.getHeight();
+        float height = size.getWidth();
+        return new Vector2D(width/2,height/2);
     }
 }

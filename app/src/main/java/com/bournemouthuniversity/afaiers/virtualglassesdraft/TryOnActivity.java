@@ -13,18 +13,27 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 
 import android.content.pm.PackageManager;
-import android.graphics.PointF;
-import android.renderscript.Float2;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.face.Landmark;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class TryOnActivity extends AppCompatActivity {
@@ -36,11 +45,17 @@ public class TryOnActivity extends AppCompatActivity {
     //layout setup
     private Button m_captureButton;
 
+    private SeekBar m_scaleBar;
+
     private CameraSource m_camSource = null;
 
     private CameraPreview m_camPreview;
 
+    private TryOnSurface m_tryOnSurface;
+
     private TryOnRenderer m_tryOnRenderer;
+
+    private int scaleProgress = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,13 +65,39 @@ public class TryOnActivity extends AppCompatActivity {
         //get and setup capture button
         m_captureButton = findViewById(R.id.capture_button);
         assert m_captureButton != null;
+        m_captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TakePicture();
+            }
+        });
+
+        m_scaleBar = findViewById(R.id.scale_bar);
+        m_scaleBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+                scaleProgress = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        m_tryOnSurface = findViewById(R.id.try_on_surface);
+        m_tryOnRenderer = m_tryOnSurface.GetRenderer();
+
+        m_tryOnRenderer.SetMesh(getApplicationContext(),R.raw.test1);
 
         //get the camera preview
         m_camPreview = findViewById(R.id.cam_preview);
+        m_camPreview.SetTryOnSurface(m_tryOnSurface);
         createCameraSource();
-
-        TryOnSurface m_tryOnSurface = findViewById(R.id.try_on_surface);
-        m_tryOnRenderer = m_tryOnSurface.GetRenderer();
     }
 
     private void createCameraSource() {
@@ -94,12 +135,13 @@ public class TryOnActivity extends AppCompatActivity {
 
         m_camSource = new CameraSource.Builder(context, detector)
                 .setFacing(CameraSource.CAMERA_FACING_FRONT)
-                .setRequestedPreviewSize(1920, 1080)
-                .setRequestedFps(30.0f)
+                .setRequestedPreviewSize(1080, 1920)
+                .setRequestedFps(24.0f)
                 .build();
 
         StartCameraSource();
     }
+
 
     @Override
     protected void onResume() {
@@ -147,6 +189,54 @@ public class TryOnActivity extends AppCompatActivity {
         }
     }
 
+    private void TakePicture(){
+        m_tryOnRenderer.ReadyForCapture();
+        m_camSource.takePicture(null, new CameraSource.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] bytes) {
+                Bitmap picture = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
+                Bitmap result = CombineBitmaps(picture,m_tryOnRenderer.GetSurfaceBitmap());
+                try{
+                    int iterator = 0;
+                    File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
+                            + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
+                    while(output.exists()){
+                        iterator++;
+                        output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
+                                + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
+                    }
+                    output.createNewFile();
+                    FileOutputStream stream = new FileOutputStream(output);
+                    result.compress(Bitmap.CompressFormat.JPEG,75,stream);
+                    stream.flush();
+                    stream.close();
+                }catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private Bitmap CombineBitmaps(Bitmap _back, Bitmap _front){
+        //TODO: MAYBE PUSH TO BACKGROUND THREAD
+        int width = _back.getWidth();
+        int height = _back.getHeight();
+        Bitmap combination = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
+        Rect backRect = new Rect(0,0,width,height);
+        Rect frontRect = new Rect(0,0, _front.getWidth(), _front.getHeight());
+
+        Canvas canvas = new Canvas(combination);
+        canvas.drawBitmap(_back,backRect,backRect,null);
+        canvas.drawBitmap(_front,frontRect,backRect,null);
+        return combination;
+    }
+
+    private String GetTime(){
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH-mm_dd-MM-yyyy");
+        return sdf.format(cal.getTime());
+    }
 
     private class FaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
@@ -183,18 +273,15 @@ public class TryOnActivity extends AppCompatActivity {
                 }
             }
 
-            float yRot = 180;
-            float zRot = 0;
-
             //check that all landmarks have been found as they are required for the calculations
             if(leftEye != null && rightEye != null && noseBase != null)
             {
+                //rotation calculations
+                float yRot;
+                float zRot;
                 //set up a series of vectors from the three positions
                 Vector2D rightToLeft = new Vector2D(leftEye.getPosition().x - rightEye.getPosition().x,
                                                     leftEye.getPosition().y - rightEye.getPosition().y);
-
-                Vector2D leftToNose = new Vector2D(noseBase.getPosition().x - leftEye.getPosition().x,
-                                                noseBase.getPosition().y - leftEye.getPosition().y);
 
                 Vector2D rightToNose = new Vector2D(noseBase.getPosition().x - rightEye.getPosition().x,
                                                 noseBase.getPosition().y - rightEye.getPosition().y);
@@ -217,9 +304,28 @@ public class TryOnActivity extends AppCompatActivity {
 
                 yRot = (ratio - 0.5f) * 90.0f;
 
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //scale calculations
+
+                //sets scale in a range from 0.5 to 1.5
+                float scale = ((float)scaleProgress / 100.0f) + 0.5f;
+
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //Translation calculations
+
+                //find the point directly between the eyes
+                Vector2D betweenEyes = new Vector2D((leftEye.getPosition().x+rightEye.getPosition().x)/2,(leftEye.getPosition().y + rightEye.getPosition().y)/2);
+                //find the center point of the image from the camera
+                Vector2D centerOfImage = m_camPreview.GetCenterOfCam();
+                //create an offset position from the center in the scale -1to1 (to match openGL clip space)
+                Vector2D offset = new Vector2D(((betweenEyes.x-centerOfImage.x)/centerOfImage.x)*-1,((betweenEyes.y-centerOfImage.y)/centerOfImage.y)*-1);
+                Log.d(TAG, "betweenEyes: ("+betweenEyes.x+","+betweenEyes.y+")");
+                Log.d(TAG, "center: ("+centerOfImage.x+","+centerOfImage.y+")");
+                Log.d(TAG,"offset: ("+offset.x+","+offset.y+")");
+                m_tryOnRenderer.SetGlassesTransformation(-yRot, zRot,scale,offset);
             }
 
-            m_tryOnRenderer.SetGlassesRotation(-yRot, zRot);
+
         }
     }
 }

@@ -46,9 +46,10 @@ public class MainActivity extends AppCompatActivity {
         tabs.setupWithViewPager(m_viewPager);
     }
 
-    public void SwitchToCamera(View view)
+    public void SwitchToCamera(FrameData _data)
     {
         Intent intent = new Intent(this,TryOnActivity.class);
+        intent.putExtra("Frame",_data);
         startActivity(intent);
     }
 }
