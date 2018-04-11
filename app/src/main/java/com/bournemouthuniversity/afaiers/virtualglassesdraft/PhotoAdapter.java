@@ -1,8 +1,11 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -47,11 +51,18 @@ class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.FrameViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(PhotoAdapter.FrameViewHolder holder, int position) {
+    public void onBindViewHolder(final PhotoAdapter.FrameViewHolder holder,final int position) {
         //TODO: MAKE THUMBNAIL GETTING MORE EFFICIENT (push to background thread?)
         Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(photos.get(position).GetImagePath()), 384,512);
         holder.photoImage.setImageBitmap(thumbnail);
         holder.nameText.setText(photos.get(position).GetName());
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity main = (MainActivity) holder.itemView.getContext();
+                main.SwitchToPhoto(photos.get(position).GetImagePath());
+            }
+        });
     }
 
     @Override

@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 
 import com.google.android.gms.vision.CameraSource;
@@ -44,6 +45,8 @@ public class TryOnActivity extends AppCompatActivity {
 
     //layout setup
     private Button m_captureButton;
+
+    private ImageButton m_closeButton;
 
     private SeekBar m_scaleBar;
 
@@ -72,6 +75,14 @@ public class TryOnActivity extends AppCompatActivity {
             }
         });
 
+        m_closeButton = findViewById(R.id.close_button);
+        m_closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ReturnToHome();
+            }
+        });
+
         m_scaleBar = findViewById(R.id.scale_bar);
         m_scaleBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -89,6 +100,7 @@ public class TryOnActivity extends AppCompatActivity {
 
             }
         });
+
         m_tryOnSurface = findViewById(R.id.try_on_surface);
         m_tryOnRenderer = m_tryOnSurface.GetRenderer();
 
@@ -98,6 +110,10 @@ public class TryOnActivity extends AppCompatActivity {
         m_camPreview = findViewById(R.id.cam_preview);
         m_camPreview.SetTryOnSurface(m_tryOnSurface);
         createCameraSource();
+    }
+
+    private void ReturnToHome(){
+        finish();
     }
 
     private void createCameraSource() {
@@ -198,11 +214,11 @@ public class TryOnActivity extends AppCompatActivity {
                 Bitmap result = CombineBitmaps(picture,m_tryOnRenderer.GetSurfaceBitmap());
                 try{
                     int iterator = 0;
-                    File output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
+                    File output = new File(Environment.getExternalStorageDirectory().toString()
                             + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
                     while(output.exists()){
                         iterator++;
-                        output = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString()
+                        output = new File(Environment.getExternalStorageDirectory().toString()
                                 + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
                     }
                     output.createNewFile();
@@ -319,13 +335,11 @@ public class TryOnActivity extends AppCompatActivity {
                 Vector2D centerOfImage = m_camPreview.GetCenterOfCam();
                 //create an offset position from the center in the scale -1to1 (to match openGL clip space)
                 Vector2D offset = new Vector2D(((betweenEyes.x-centerOfImage.x)/centerOfImage.x)*-1,((betweenEyes.y-centerOfImage.y)/centerOfImage.y)*-1);
-                Log.d(TAG, "betweenEyes: ("+betweenEyes.x+","+betweenEyes.y+")");
-                Log.d(TAG, "center: ("+centerOfImage.x+","+centerOfImage.y+")");
-                Log.d(TAG,"offset: ("+offset.x+","+offset.y+")");
+
+                //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                //send results to renderer
                 m_tryOnRenderer.SetGlassesTransformation(-yRot, zRot,scale,offset);
             }
-
-
         }
     }
 }

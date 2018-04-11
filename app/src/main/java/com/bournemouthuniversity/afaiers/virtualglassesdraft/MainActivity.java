@@ -52,4 +52,11 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("Frame",_data);
         startActivity(intent);
     }
+
+    public void SwitchToPhoto(String _filePath)
+    {
+        Intent intent = new Intent(this,PhotoViewer.class);
+        intent.putExtra("filePath",_filePath);
+        startActivity(intent);
+    }
 }

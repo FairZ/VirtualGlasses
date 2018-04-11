@@ -69,7 +69,7 @@ public class Gallery extends Fragment {
     {
         photoList = new ArrayList<Photo>();
         //add getting of files
-        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
+        String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
         if(files != null) {
@@ -82,7 +82,7 @@ public class Gallery extends Fragment {
     private void RemakePhotoList(){
         photoList = new ArrayList<Photo>();
         //add getting of files
-        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
+        String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
         if(files!= null) {
@@ -102,7 +102,7 @@ public class Gallery extends Fragment {
 
     public void DeletePhotos()
     {
-        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
+        String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
         for (int i = 0; i < files.length; i++)
