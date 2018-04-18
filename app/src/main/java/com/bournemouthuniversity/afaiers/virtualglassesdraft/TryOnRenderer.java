@@ -38,11 +38,18 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     private int m_width = 0;
     private int m_height = 0;
 
+    private TryOnActivity m_activity;
+
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glCullFace(GLES20.GL_BACK);
+        GLES20.glEnable( GLES20.GL_DEPTH_TEST );
+        GLES20.glDepthFunc( GLES20.GL_LEQUAL );
+        GLES20.glDepthMask( true );
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         Matrix.setIdentityM(m_modelMatrix,0);
         m_mesh = new Mesh(m_context, m_meshResourceID);
     }
@@ -53,15 +60,16 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
         m_width = width;
         m_height = height;
         float ratio = (float)width / height;
-        Matrix.perspectiveM(m_projectionMatrix,0,90,ratio,0.1f,10);
-        Matrix.setLookAtM(m_viewMatrix, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.perspectiveM(m_projectionMatrix,0,54,ratio,0.1f,1);
+        Matrix.setLookAtM(m_viewMatrix, 0, 0f, 0f, 0.5f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(m_VPMatrix, 0, m_projectionMatrix, 0, m_viewMatrix, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
+        m_activity.GetColours();
         //clear colour buffer
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);
         Matrix.multiplyMM(m_MVPMatrix,0, m_VPMatrix,0, m_modelMatrix,0);
         //Drawing
         m_mesh.Draw(m_MVPMatrix);
@@ -71,6 +79,8 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
             m_capture = false;
         }
     }
+
+
 
     public static Shader GetShader()
     {
@@ -92,6 +102,11 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     public void SetMesh(Context _context, int _resourceID){
         m_context = _context;
         m_meshResourceID = _resourceID;
+    }
+
+    public void SetActivity(TryOnActivity _activity)
+    {
+        m_activity = _activity;
     }
 
     public void ReadyForCapture(){
@@ -119,4 +134,20 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
         return m_bmp;
     }
 
+    public void SetColours(float[] _front, float[] _left, float[] _right, float[] _lens){
+        m_mesh.SetFrontColour(_front[0],_front[1],_front[2],_front[3]);
+        m_mesh.SetLeftArmColour(_left[0],_left[1],_left[2],_left[3]);
+        m_mesh.SetRightArmColour(_right[0],_right[1],_right[2],_right[3]);
+        m_mesh.SetLensColour(_lens[0],_lens[1],_lens[2],_lens[3]);
+    }
+
+    public void OccludeArm(boolean _left, boolean _right)
+    {
+        m_mesh.SetOccludes(_left,_right);
+    }
+
+    public void Close()
+    {
+        m_shader = null;
+    }
 }

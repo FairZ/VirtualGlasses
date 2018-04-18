@@ -14,6 +14,7 @@ import java.util.jar.Attributes;
 public class TryOnSurface extends GLSurfaceView {
 
     private final TryOnRenderer m_renderer;
+    private CameraPreview m_camPreview = null;
 
     public TryOnSurface(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -28,9 +29,21 @@ public class TryOnSurface extends GLSurfaceView {
         setRenderer(m_renderer);
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if(m_camPreview != null) {
+            m_camPreview.MatchLayout(left, top, right, bottom);
+        }
+    }
+
     public TryOnRenderer GetRenderer()
     {
         return m_renderer;
     }
 
+    public void SetCamPreview(CameraPreview _camPreview)
+    {
+        m_camPreview = _camPreview;
+    }
 }

@@ -52,7 +52,6 @@ class PhotoAdapter extends RecyclerView.Adapter<PhotoAdapter.FrameViewHolder>{
 
     @Override
     public void onBindViewHolder(final PhotoAdapter.FrameViewHolder holder,final int position) {
-        //TODO: MAKE THUMBNAIL GETTING MORE EFFICIENT (push to background thread?)
         Bitmap thumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(photos.get(position).GetImagePath()), 384,512);
         holder.photoImage.setImageBitmap(thumbnail);
         holder.nameText.setText(photos.get(position).GetName());

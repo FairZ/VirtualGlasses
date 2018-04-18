@@ -2,13 +2,17 @@ package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
 import android.content.Context;
 import android.opengl.GLES20;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -16,21 +20,26 @@ import java.util.Scanner;
  */
 
 public class Mesh {
-    private FloatBuffer[] m_vertexBuffers;
+    private FloatBuffer m_vertexBuffer;
     private ShortBuffer[] m_faceBuffers;
     private Shader m_shader;
-    private List<String>[] m_vertexLists;
+    private List<String> m_vertexList;
     private List<String>[] m_faceLists;
     private Vector2D m_frameOffset;
     private List<float[]> m_colours;
 
+    private boolean m_occludeLeft = false;
+    private boolean m_occludeRight = false;
+
     public Mesh(Context _context, int _id)
     {
+        Log.d("Mesh", "Mesh Constructor");
         //initialise variables
-        int meshNum = -1;
-        m_vertexBuffers = new FloatBuffer[4];
+        int meshNum = 0;
+        int maxNum = -1;
+        Map<String,Integer> groups = new HashMap<>();
         m_faceBuffers = new ShortBuffer[4];
-        m_vertexLists = new List[4];
+        m_vertexList = new ArrayList<>();
         m_faceLists = new List[4];
         m_frameOffset = new Vector2D();
         m_colours = new ArrayList<>();
@@ -47,15 +56,22 @@ public class Mesh {
         while(scanner.hasNextLine())
         {
             String line = scanner.nextLine();
-            if(line.startsWith("o "))
+            if(line.startsWith("g "))
             {
-                meshNum +=1;
-                m_vertexLists[meshNum] = new ArrayList<>();
-                m_faceLists[meshNum] = new ArrayList<>();
+                String[] words = line.split(" ");
+                if(!groups.containsKey(words[1])) {
+                    meshNum = maxNum+1;
+                    maxNum+=1;
+                    m_faceLists[meshNum] = new ArrayList<>();
+                    groups.put(words[1],meshNum);
+                }
+                else {
+                    meshNum = groups.get(words[1]);
+                }
             }
             else if(line.startsWith("v "))
             {
-                m_vertexLists[meshNum].add(line);
+                m_vertexList.add(line);
             }
             else if(line.startsWith("f "))
             {
@@ -64,22 +80,22 @@ public class Mesh {
         }
         scanner.close();
 
-        for (int i = 0; i < 4; i++) {
-            ByteBuffer forVertices = ByteBuffer.allocateDirect(m_vertexLists[i].size() * 3 * 4);
-            forVertices.order(ByteOrder.nativeOrder());
-            m_vertexBuffers[i] = forVertices.asFloatBuffer();
+        ByteBuffer forVertices = ByteBuffer.allocateDirect(m_vertexList.size() * 3 * 4);
+        forVertices.order(ByteOrder.nativeOrder());
+        m_vertexBuffer = forVertices.asFloatBuffer();
 
+        for (String vertex : m_vertexList) {
+            String xyz[] = vertex.split(" ");
+            m_vertexBuffer.put(Float.parseFloat(xyz[1]));
+            m_vertexBuffer.put(Float.parseFloat(xyz[2]));
+            m_vertexBuffer.put(Float.parseFloat(xyz[3]));
+        }
+        m_vertexBuffer.position(0);
+
+        for (int i = 0; i < 4; i++) {
             ByteBuffer forFaces = ByteBuffer.allocateDirect(m_faceLists[i].size() * 3 * 2);
             forFaces.order(ByteOrder.nativeOrder());
             m_faceBuffers[i] = forFaces.asShortBuffer();
-
-            for (String vertex : m_vertexLists[i]) {
-                String xyz[] = vertex.split(" ");
-                m_vertexBuffers[i].put(Float.parseFloat(xyz[1]));
-                m_vertexBuffers[i].put(Float.parseFloat(xyz[2]));
-                m_vertexBuffers[i].put(Float.parseFloat(xyz[3]));
-            }
-            m_vertexBuffers[i].position(0);
 
             for (String face : m_faceLists[i]) {
                 String indices[] = face.split(" ");
@@ -119,27 +135,29 @@ public class Mesh {
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(positionHandle);
 
+        //pass the vertex positions to the vertex shader
+        GLES20.glVertexAttribPointer(positionHandle, 3,
+                GLES20.GL_FLOAT, false,
+                3 * 4, m_vertexBuffer);
+
+        //pass the mvp matrix to the vertex shader
+        GLES20.glUniformMatrix4fv(MVPHandle, 1, false, _MVPMatrix, 0);
+
+        float framePosition[] = {m_frameOffset.x, m_frameOffset.y, 0, 0};
+        //pass frame position to the vertex shader
+        GLES20.glUniform4fv(framePositionHandle, 1, framePosition, 0);
+
         //loop through and draw each model
         for(int i = 0; i < 4; i++) {
 
-            //pass the vertex positions to the vertex shader
-            GLES20.glVertexAttribPointer(positionHandle, 3,
-                    GLES20.GL_FLOAT, false,
-                    3 * 4, m_vertexBuffers[i]);
+            //if an arm is occluded skip drawing it
+            if(!(i==1&&m_occludeLeft)&&!(i==2&&m_occludeRight)) {
+                //pass color to the fragment shader
+                GLES20.glUniform4fv(colorHandle, 1, m_colours.get(i), 0);
 
-            //pass the mvp matrix to the vertex shader
-            GLES20.glUniformMatrix4fv(MVPHandle, 1, false, _MVPMatrix, 0);
-
-            //pass color to the fragment shader
-            GLES20.glUniform4fv(colorHandle, 1, m_colours.get(i), 0);
-
-            float framePosition[] = {m_frameOffset.x, m_frameOffset.y, 0, 0};
-            //pass frame position to the vertex shader
-            GLES20.glUniform4fv(framePositionHandle, 1, framePosition, 0);
-
-            // Draw the model
-            GLES20.glDrawElements(GLES20.GL_TRIANGLES, m_faceLists[i].size() * 3, GLES20.GL_UNSIGNED_SHORT, m_faceBuffers[i]);
-
+                // Draw the model
+                GLES20.glDrawElements(GLES20.GL_TRIANGLES, m_faceLists[i].size() * 3, GLES20.GL_UNSIGNED_SHORT, m_faceBuffers[i]);
+            }
         }
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle);
@@ -148,5 +166,43 @@ public class Mesh {
     public void SetFramePosition(Vector2D _pos)
     {
         m_frameOffset = _pos;
+    }
+
+    public void SetFrontColour(float _R, float _G, float _B, float _A )
+    {
+        m_colours.get(0)[0] = _R;
+        m_colours.get(0)[1] = _G;
+        m_colours.get(0)[2] = _B;
+        m_colours.get(0)[3] = _A;
+    }
+
+    public void SetRightArmColour(float _R, float _G, float _B, float _A )
+    {
+        m_colours.get(1)[0] = _R;
+        m_colours.get(1)[1] = _G;
+        m_colours.get(1)[2] = _B;
+        m_colours.get(1)[3] = _A;
+    }
+
+    public void SetLeftArmColour(float _R, float _G, float _B, float _A )
+    {
+        m_colours.get(2)[0] = _R;
+        m_colours.get(2)[1] = _G;
+        m_colours.get(2)[2] = _B;
+        m_colours.get(2)[3] = _A;
+    }
+
+    public void SetLensColour(float _R, float _G, float _B, float _A )
+    {
+        m_colours.get(3)[0] = _R;
+        m_colours.get(3)[1] = _G;
+        m_colours.get(3)[2] = _B;
+        m_colours.get(3)[3] = _A;
+    }
+
+    public void SetOccludes(boolean _left, boolean _right)
+    {
+        m_occludeLeft = _left;
+        m_occludeRight = _right;
     }
 }

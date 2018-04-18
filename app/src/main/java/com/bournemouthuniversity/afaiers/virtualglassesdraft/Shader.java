@@ -17,14 +17,19 @@ public class Shader {
                     "uniform vec4 framePosition;"+
                     "void main() {" +
                     "  vec4 position = MVP * vPosition;" +
-                    "  gl_Position = position + framePosition;" +
+                    "  position = position / position.w;" +
+                    "  position += framePosition;" +
+                    "  position.w = 1.0f;" +
+                    "  gl_Position = position;" +
                     "}";
 
     private final String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  vec4 colour = vColor;"+
+                    "  colour.rgb *= colour.a;"+
+                    "  gl_FragColor = colour;" +
                     "}";
 
 

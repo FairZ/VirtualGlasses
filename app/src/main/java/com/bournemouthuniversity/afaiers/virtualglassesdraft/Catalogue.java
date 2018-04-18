@@ -51,9 +51,12 @@ public class Catalogue extends Fragment {
     private void InitializeFrameList()
     {
         frameList = new ArrayList<Frame>();
-        frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1,0.5f));
-        frameList.add(new Frame("Model 2", R.drawable.catalogue_image_2,0.5f));
-        frameList.add(new Frame("Model 3", R.drawable.catalogue_image_3,0.5f));
+        frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1,new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+                new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final1));
+        frameList.add(new Frame("Model 2", R.drawable.catalogue_image_2,new float[] {1.0f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+                new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final2));
+        frameList.add(new Frame("Model 3", R.drawable.catalogue_image_3,new float[] {0.5f,0.5f,1.0f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+                new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final3));
     }
 
 

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,18 +15,35 @@ import android.util.Log;
 import android.view.View;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager m_viewPager;
     private static final String TAG = "Main Act";
 
+    private static final int MULTIPLE_PERMISSIONS = 10;
+
+    private final String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //TODO check for file and camera permissions and if not given then ask for them
+        List<String> requiredPermissions = new ArrayList<>();
+        for(String permission:permissions)
+        {
+            int permissionCheck = ActivityCompat.checkSelfPermission(this, permission);
+            if(permissionCheck !=PackageManager.PERMISSION_GRANTED)
+            {
+                requiredPermissions.add(permission);
+            }
+        }
+        if (!requiredPermissions.isEmpty()) {
+            Log.w(TAG, "File permissions are not granted. Requesting permission");
+            ActivityCompat.requestPermissions(this, requiredPermissions.toArray(new String[requiredPermissions.size()]), MULTIPLE_PERMISSIONS);
+        }
 
         String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);

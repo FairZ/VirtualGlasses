@@ -11,10 +11,10 @@ class Frame {
     private int m_imageRef;
     private FrameData m_frameData;
 
-    public Frame(String _name, int _imageRef, float _eyeCentersDist) {
+    public Frame(String _name, int _imageRef, float[] _frontCol, float[] _leftCol, float[] _rightCol, float[] _lensCol, int _meshID) {
         this.m_name = _name;
         this.m_imageRef = _imageRef;
-        this.m_frameData = new FrameData(_eyeCentersDist);
+        this.m_frameData = new FrameData(_frontCol,_leftCol,_rightCol,_lensCol,_meshID);
     }
 
     public String GetName()
