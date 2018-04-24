@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -86,7 +85,6 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     {
         if (m_shader == null)
         {
-            Log.d(TAG, "Shader was null");
             m_shader = new Shader();
         }
         return m_shader;

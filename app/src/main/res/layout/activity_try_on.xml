@@ -24,6 +24,14 @@
         android:id="@+id/try_on_surface"
         />
 
+    <ImageView
+        android:id="@+id/screen_flash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="1"
+        android:visibility="invisible"
+        app:srcCompat="@android:color/background_light" />
+
     <Button
         android:id="@+id/capture_button"
         android:layout_width="wrap_content"

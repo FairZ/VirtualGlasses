@@ -22,8 +22,9 @@ public class FrameData implements Parcelable {
     private float m_lensB;
     private float m_lensA;
     private int m_meshID;
+    private String m_name;
 
-    public FrameData(float[] _frontCol, float[] _leftCol, float[] _rightCol, float[] _lensCol, int _meshID) {
+    public FrameData(float[] _frontCol, float[] _leftCol, float[] _rightCol, float[] _lensCol, int _meshID, String _name) {
         m_frontR = _frontCol[0];
         m_frontG = _frontCol[1];
         m_frontB = _frontCol[2];
@@ -41,6 +42,7 @@ public class FrameData implements Parcelable {
         m_lensB = _lensCol[2];
         m_lensA = _lensCol[3];
         m_meshID = _meshID;
+        m_name = _name;
     }
 
     public float[] GetFrontCol()
@@ -72,12 +74,17 @@ public class FrameData implements Parcelable {
         return m_meshID;
     }
 
+    public String GetName()
+    {
+        return m_name;
+    }
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //Parcelable section
 
 
     protected FrameData(Parcel in) {
-        String[] data = new String[17];
+        String[] data = new String[18];
 
         in.readStringArray(data);
         this.m_frontR = Float.parseFloat(data[0]);
@@ -97,6 +104,7 @@ public class FrameData implements Parcelable {
         this.m_lensB = Float.parseFloat(data[14]);
         this.m_lensA = Float.parseFloat(data[15]);
         this.m_meshID = Integer.parseInt(data[16]);
+        this.m_name = data[17];
     }
 
     @Override
@@ -118,7 +126,8 @@ public class FrameData implements Parcelable {
                 Float.toString(this.m_lensG),
                 Float.toString(this.m_lensB),
                 Float.toString(this.m_lensA),
-                Integer.toString(this.m_meshID)
+                Integer.toString(this.m_meshID),
+                this.m_name
         });
     }
 

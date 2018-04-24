@@ -1,7 +1,6 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
 import android.opengl.GLES20;
-import android.util.Log;
 
 /**
  * Created by Adam on 27/02/2018.
@@ -62,8 +61,6 @@ public class Shader {
         GLES20.glGetShaderiv(shaderLoc, GLES20.GL_COMPILE_STATUS, shaderSuccess, 0);
         if(shaderSuccess[0] == GLES20.GL_FALSE)
         {
-            Log.d("Shader", "shader compile failed");
-            Log.d("Shader", GLES20.glGetShaderInfoLog(shaderLoc));
         }
 
         return shaderLoc;

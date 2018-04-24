@@ -11,8 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,11 +39,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if (!requiredPermissions.isEmpty()) {
-            Log.w(TAG, "File permissions are not granted. Requesting permission");
             ActivityCompat.requestPermissions(this, requiredPermissions.toArray(new String[requiredPermissions.size()]), MULTIPLE_PERMISSIONS);
         }
 
-        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + getResources().getString(R.string.folder_name);
+        String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         if (!f.exists())
         {
@@ -57,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
         SectionsPageAdapter adapter = new SectionsPageAdapter(getSupportFragmentManager());
         adapter.AddFragment(new Catalogue(), "Catalogue");
         adapter.AddFragment(new Gallery(), "Gallery");
+        Catalogue catalogue = (Catalogue)adapter.getItem(0);
+        catalogue.SetContext(this);
 
         m_viewPager.setAdapter(adapter);
 

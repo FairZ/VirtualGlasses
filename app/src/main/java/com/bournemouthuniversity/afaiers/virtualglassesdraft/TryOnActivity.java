@@ -1,6 +1,5 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 
@@ -12,7 +11,6 @@ import com.google.android.gms.vision.face.FaceDetector;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -21,14 +19,14 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.transition.Visibility;
-import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
@@ -78,6 +76,9 @@ public class TryOnActivity extends AppCompatActivity {
     private LinearLayout m_scaleHolder;
     private LinearLayout m_colourHolder;
 
+    private ImageView m_screenFlash;
+    private Animation m_flash;
+
     private CameraSource m_camSource = null;
 
     private CameraPreview m_camPreview;
@@ -88,18 +89,19 @@ public class TryOnActivity extends AppCompatActivity {
 
     private int scaleProgress = 50;
 
+    private FrameData m_frame;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_try_on);
 
-        FrameData Frame = getIntent().getParcelableExtra("Frame");
+        m_frame = getIntent().getParcelableExtra("Frame");
 
-        m_frontCol = Frame.GetFrontCol();
-        m_leftCol = Frame.GetLeftCol();
-        m_rightCol = Frame.GetRightCol();
-        m_lensCol = Frame.GetLensCol();
+        m_frontCol = m_frame.GetFrontCol();
+        m_leftCol = m_frame.GetLeftCol();
+        m_rightCol = m_frame.GetRightCol();
+        m_lensCol = m_frame.GetLensCol();
 
         m_closeButton = findViewById(R.id.close_button);
         m_closeButton.setOnClickListener(new View.OnClickListener() {
@@ -112,7 +114,7 @@ public class TryOnActivity extends AppCompatActivity {
         m_tryOnSurface = findViewById(R.id.try_on_surface);
         m_tryOnRenderer = m_tryOnSurface.GetRenderer();
 
-        m_tryOnRenderer.SetMesh(getApplicationContext(),Frame.GetMeshID());
+        m_tryOnRenderer.SetMesh(getApplicationContext(),m_frame.GetMeshID());
         m_tryOnRenderer.SetActivity(this);
 
         //get the camera preview
@@ -120,6 +122,27 @@ public class TryOnActivity extends AppCompatActivity {
         m_camPreview.SetTryOnSurface(m_tryOnSurface);
         m_tryOnSurface.SetCamPreview(m_camPreview);
         createCameraSource();
+
+        m_screenFlash = findViewById(R.id.screen_flash);
+
+        m_flash = new AlphaAnimation(1.0f,0.0f);
+        m_flash.setDuration(250);
+        m_flash.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                m_screenFlash.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                m_screenFlash.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
 
         SetupCustomisationViews();
     }
@@ -452,7 +475,6 @@ public class TryOnActivity extends AppCompatActivity {
 
         if(!m_detector.isOperational())
         {
-            Log.d(TAG, "FaceDetector dependencies have not yet been downloaded");
         }
 
         m_camSource = new CameraSource.Builder(context, m_detector)
@@ -500,7 +522,6 @@ public class TryOnActivity extends AppCompatActivity {
         int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
                 getApplicationContext());
         if (code != ConnectionResult.SUCCESS) {
-            Log.d(TAG, "don't have google play services");
             Dialog dlg =
                     GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
             dlg.show();
@@ -512,7 +533,6 @@ public class TryOnActivity extends AppCompatActivity {
                 m_camPreview.Start(m_camSource);
             }catch (IOException e)
             {
-                Log.e(TAG, "Unable to start camera source.", e);
                 m_camSource.release();
                 m_camSource = null;
             }
@@ -530,11 +550,11 @@ public class TryOnActivity extends AppCompatActivity {
                 try{
                     int iterator = 0;
                     File output = new File(Environment.getExternalStorageDirectory().toString()
-                            + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
+                            + getResources().getString(R.string.folder_name)+ "/" + m_frame.GetName() + ".jpg");
                     while(output.exists()){
                         iterator++;
                         output = new File(Environment.getExternalStorageDirectory().toString()
-                                + getResources().getString(R.string.folder_name)+ "/Pic_" + GetTime() + "(" + iterator + ").jpg");
+                                + getResources().getString(R.string.folder_name)+ "/" + m_frame.GetName() + "(" + iterator + ").jpg");
                     }
                     output.createNewFile();
                     FileOutputStream stream = new FileOutputStream(output);
@@ -542,6 +562,7 @@ public class TryOnActivity extends AppCompatActivity {
                     stream.flush();
                     stream.close();
                     m_captureButton.setClickable(true);
+                    m_screenFlash.startAnimation(m_flash);
                 }catch (IOException e)
                 {
                     e.printStackTrace();
@@ -574,8 +595,6 @@ public class TryOnActivity extends AppCompatActivity {
     private class FaceTrackerFactory implements MultiProcessor.Factory<Face> {
         @Override
         public Tracker<Face> create(Face face) {
-
-            Log.d(TAG, "Found Face!");
             return new FaceTracker();
         }
     }

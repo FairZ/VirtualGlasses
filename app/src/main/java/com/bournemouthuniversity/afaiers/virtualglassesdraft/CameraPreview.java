@@ -3,7 +3,6 @@ package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
@@ -20,8 +19,6 @@ import java.io.IOException;
  */
 
 class CameraPreview extends ViewGroup {
-
-    private static final String TAG = "CamPreview";
 
     private Context m_context;
     private SurfaceView m_surfaceView;
@@ -48,6 +45,9 @@ class CameraPreview extends ViewGroup {
         m_surfaceView.getHolder().addCallback(new SurfaceCallback());
 
         addView(m_surfaceView);
+        for (int i = 0; i < getChildCount(); i++) {
+            getChildAt(i).layout(0, 0, 1, 1);
+        }
     }
 
     public void Start(CameraSource camSource) throws IOException {
@@ -71,14 +71,13 @@ class CameraPreview extends ViewGroup {
                 int width = 720;
                 int height = 1280;
                 if (m_camSource != null) {
-                    Log.d(TAG, "Cam source isn't null");
                     Size size = m_camSource.getPreviewSize();
                     width = size.getHeight();
                     height = size.getWidth();
                 }
 
                 float childHeight = m_layoutHeight;
-                float childWidth = ((m_layoutHeight / (float) height) * (float) width);
+                float childWidth = (( m_layoutHeight / (float) height) * (float) width);
 
                 DisplayMetrics DM = new DisplayMetrics();
                 ((TryOnActivity) m_context).getWindowManager().getDefaultDisplay().getMetrics(DM);
@@ -93,13 +92,11 @@ class CameraPreview extends ViewGroup {
                     getChildAt(i).layout(m_left, m_top, m_right, m_bottom);
                 }
                 m_tryOnSurface.layout(m_left, m_top, m_right, m_bottom);
-
                 m_startRequested = false;
             }
         }
         catch(SecurityException e)
         {
-            Log.d(TAG, "camera permission required");
         }
     }
 
@@ -112,33 +109,14 @@ class CameraPreview extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int width = 720;
-        int height = 1280;
 
         m_layoutWidth = right - left;
         m_layoutHeight = bottom - top;
 
-        Log.d(TAG,"layoutwidth: "+m_layoutWidth);
-        Log.d(TAG, "layoutHeight: "+m_layoutHeight);
-
-        float childWidth = m_layoutWidth;
-        float childHeight = ((m_layoutWidth / (float) width) * (float) height);
-
-        if(childHeight > m_layoutHeight)
-        {
-            childHeight = m_layoutHeight;
-            childWidth = (( m_layoutHeight / (float) height) * (float) width);
-        }
-
-        for (int i = 0; i < getChildCount(); i++) {
-            getChildAt(i).layout(0, 0, (int) childWidth, (int) childHeight);
-        }
-
-
         try {
             StartIfReady();
         } catch (IOException e) {
-            Log.e(TAG, "Could not start camera source.", e);
+
         }
 
     }
@@ -150,7 +128,7 @@ class CameraPreview extends ViewGroup {
             try {
                 StartIfReady();
             }catch (IOException e){
-                Log.e(TAG, "Could not start camera source.", e);
+
             }
         }
 

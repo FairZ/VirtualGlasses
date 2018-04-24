@@ -2,7 +2,6 @@ package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -33,7 +32,6 @@ public class Mesh {
 
     public Mesh(Context _context, int _id)
     {
-        Log.d("Mesh", "Mesh Constructor");
         //initialise variables
         int meshNum = 0;
         int maxNum = -1;

@@ -1,5 +1,6 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,10 +16,16 @@ import java.util.List;
 
 public class Catalogue extends Fragment {
 
-    private List<Frame> frameList;
+    private List<Frame> m_frameList;
+    private Context m_context;
 
     public Catalogue() {
-        // Required empty public constructor
+
+    }
+
+    public void SetContext(Context _context)
+    {
+        m_context = _context;
     }
 
     @Override
@@ -44,18 +51,18 @@ public class Catalogue extends Fragment {
         InitializeFrameList();
 
         //initialise and set the adapter for frames
-        FrameAdapter adapter = new FrameAdapter(frameList);
+        FrameAdapter adapter = new FrameAdapter(m_frameList);
         recyclerView.setAdapter(adapter);
     }
 
     private void InitializeFrameList()
     {
-        frameList = new ArrayList<Frame>();
-        frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1,new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+        m_frameList = new ArrayList<Frame>();
+        m_frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1, new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
                 new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final1));
-        frameList.add(new Frame("Model 2", R.drawable.catalogue_image_2,new float[] {1.0f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+        m_frameList.add(new Frame("Model 2", R.drawable.catalogue_image_2, new float[] {1.0f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
                 new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final2));
-        frameList.add(new Frame("Model 3", R.drawable.catalogue_image_3,new float[] {0.5f,0.5f,1.0f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
+        m_frameList.add(new Frame("Model 3", R.drawable.catalogue_image_3, new float[] {0.5f,0.5f,1.0f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
                 new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final3));
     }
 
