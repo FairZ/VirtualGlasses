@@ -1,6 +1,5 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -16,9 +15,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    Fragment to handle the display and functions of the Gallery tab of the main activity
+*/
 public class Gallery extends Fragment {
-
-    private static final String TAG = "Gallery";
 
     private List<Photo> photoList = null;
     private PhotoAdapter adapter = null;
@@ -41,7 +41,7 @@ public class Gallery extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         //get the RecyclerView and fix its size
-        recyclerView = (RecyclerView) view.findViewById(R.id.gallery_view);
+        recyclerView = view.findViewById(R.id.gallery_view);
         recyclerView.setHasFixedSize(true);
 
         //create a new grid layout manager and assign it to the recycler view
@@ -55,7 +55,8 @@ public class Gallery extends Fragment {
         adapter = new PhotoAdapter(photoList);
         recyclerView.setAdapter(adapter);
 
-        deleteButton = (Button) view.findViewById(R.id.gallery_delete);
+        deleteButton = view.findViewById(R.id.gallery_delete);
+        //assign the onClick callback function to call delete photos
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -67,7 +68,7 @@ public class Gallery extends Fragment {
     private void InitializePhotoList()
     {
         photoList = new ArrayList<Photo>();
-        //add getting of files
+        //get all files in the app's directory and create a list of them
         String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
@@ -80,7 +81,7 @@ public class Gallery extends Fragment {
 
     private void RemakePhotoList(){
         photoList = new ArrayList<Photo>();
-        //add getting of files
+        //get all files in the app's directory and create a list of them
         String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();
@@ -89,6 +90,7 @@ public class Gallery extends Fragment {
                 photoList.add(new Photo(files[i].getName(), files[i].getAbsolutePath()));
             }
         }
+        //update the recycler view to show all new photos
         adapter.UpdateList(photoList);
         adapter.notifyDataSetChanged();
     }
@@ -96,11 +98,13 @@ public class Gallery extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        //recreate the photo list when re-entering the fragment
         RemakePhotoList();
     }
 
     public void DeletePhotos()
     {
+        //delete all photos saved by the app and update the recycler view
         String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
         File f = new File(path);
         File[] files = f.listFiles();

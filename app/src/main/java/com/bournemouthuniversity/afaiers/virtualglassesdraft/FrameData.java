@@ -3,6 +3,10 @@ package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+
+/*
+    Parcelable class to safely send all necessary data across from catalogue to Try on activity
+*/
 public class FrameData implements Parcelable {
     //Data Section
     private float m_frontR;
@@ -84,6 +88,8 @@ public class FrameData implements Parcelable {
 
 
     protected FrameData(Parcel in) {
+        //data must be converted to and from a single data structure in a single array therefore string is used
+        //order of read and write for these pieces of data must be identical
         String[] data = new String[18];
 
         in.readStringArray(data);

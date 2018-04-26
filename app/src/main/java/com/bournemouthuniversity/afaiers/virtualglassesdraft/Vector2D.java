@@ -1,9 +1,8 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-/**
- * Created by Adam on 01/03/2018.
- */
-
+/*
+    2 dimensional mathematical vector class used in transformation calculations as well as some other things
+*/
 public class Vector2D {
     public float x;
     public float y;
@@ -25,6 +24,7 @@ public class Vector2D {
    }
 
    public static float CompOfBOnA(Vector2D _a, Vector2D _b){
+       //found out the length of the component of B which is parallel to A
        return DotProduct(_a,_b)/_a.Magnitude();
    }
 
@@ -50,6 +50,8 @@ public class Vector2D {
 
     public static float GetAngleBetween(Vector2D _a, Vector2D _b)
     {
+        //calculate the angle between A and B
+        //will always be <180 so further direction calculations must be done by the user
         return (float) Math.toDegrees( Math.acos(DotProduct(_a,_b)) );
     }
 

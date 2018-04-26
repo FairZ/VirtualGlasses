@@ -7,10 +7,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Adam on 18/01/2018.
- */
-
+/*
+    Adapter to correctly set up the tabs and fragment switching system
+*/
 public class SectionsPageAdapter extends FragmentPagerAdapter {
 
     private final List<Fragment> mFragmentList = new ArrayList<>();

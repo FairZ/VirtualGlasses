@@ -1,11 +1,8 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-import android.content.Context;
-
-/**
- * Created by Adam on 28/01/2018.
- */
-
+/*
+    Class to store the data, name and image resource reference for each frame
+*/
 class Frame {
     private String m_name;
     private int m_imageRef;

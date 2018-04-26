@@ -9,12 +9,12 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by Adam on 28/01/2018.
- */
-
+/*
+    Adapter class to allow the Recycler view to interpret the data saved within the Frame class
+*/
 class FrameAdapter extends RecyclerView.Adapter<FrameAdapter.FrameViewHolder>{
 
+    //holder handles the layout of the view
     public class FrameViewHolder extends RecyclerView.ViewHolder{
         TextView nameText;
         ImageView frameImage;
@@ -26,12 +26,14 @@ class FrameAdapter extends RecyclerView.Adapter<FrameAdapter.FrameViewHolder>{
         }
     }
 
+    //list to hold all frames (size of which defines number of cards shown in recycler view
     List<Frame> frames;
 
     public FrameAdapter(List<Frame> _framelist) {
         frames = _framelist;
     }
 
+    //create a new card (called for each frame)
     @Override
     public FrameAdapter.FrameViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_frame,parent,false);
@@ -40,9 +42,10 @@ class FrameAdapter extends RecyclerView.Adapter<FrameAdapter.FrameViewHolder>{
 
     @Override
     public void onBindViewHolder(final FrameAdapter.FrameViewHolder holder, final int position) {
+        //set text and image based on frame's data
         holder.frameImage.setImageResource(frames.get(position).GetImageRef());
         holder.nameText.setText(frames.get(position).GetName());
-        //Set click listener for each frame adapter to send the correct frame data to try on
+        //Set click listener for each frame adapter to send the correct frame data to try on activity
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

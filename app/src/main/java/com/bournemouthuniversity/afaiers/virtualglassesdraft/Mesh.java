@@ -8,16 +8,14 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-/**
- * Created by Adam on 27/02/2018.
- */
-
+/*
+    Class to handle the creation, storage and drawing of the glasses mesh
+*/
 public class Mesh {
     private FloatBuffer m_vertexBuffer;
     private ShortBuffer[] m_faceBuffers;
@@ -50,51 +48,66 @@ public class Mesh {
                 m_colours.add(new float[] { 0, 0, 0, 0 });
         }
 
+        //open the OBJ fiole
         Scanner scanner = new Scanner(_context.getResources().openRawResource(_id));
+        //while the file has not been fully read get the next line
         while(scanner.hasNextLine())
         {
             String line = scanner.nextLine();
+            //if it begins with "g " there is a new object so check if the object has already been created
             if(line.startsWith("g "))
             {
                 String[] words = line.split(" ");
+                //if it hasn't create a new face list, increment the mesh number and add this to the dictionary
+                //for this object
                 if(!groups.containsKey(words[1])) {
                     meshNum = maxNum+1;
                     maxNum+=1;
                     m_faceLists[meshNum] = new ArrayList<>();
                     groups.put(words[1],meshNum);
                 }
+                //if it has set the mesh number to the one assigned to that object
                 else {
                     meshNum = groups.get(words[1]);
                 }
             }
+            //if it begins with a "v " the line contains a vertex so add it to the vertex list
             else if(line.startsWith("v "))
             {
                 m_vertexList.add(line);
             }
+            //if it begins with an "f " the line contains a face so add it to the correct face list
             else if(line.startsWith("f "))
             {
                 m_faceLists[meshNum].add(line);
             }
         }
+        //close the scanner upon finishing the file read
         scanner.close();
 
+        //create a byte buffer of the correct size to store all vertices
         ByteBuffer forVertices = ByteBuffer.allocateDirect(m_vertexList.size() * 3 * 4);
         forVertices.order(ByteOrder.nativeOrder());
         m_vertexBuffer = forVertices.asFloatBuffer();
 
+        //for each vertex in the list split it into x, y, and z and put them in the vertex buffer
         for (String vertex : m_vertexList) {
             String xyz[] = vertex.split(" ");
             m_vertexBuffer.put(Float.parseFloat(xyz[1]));
             m_vertexBuffer.put(Float.parseFloat(xyz[2]));
             m_vertexBuffer.put(Float.parseFloat(xyz[3]));
         }
+        //reset the position
         m_vertexBuffer.position(0);
 
+        //for each face list create a buffer of the correct size to store all the face indexes
         for (int i = 0; i < 4; i++) {
             ByteBuffer forFaces = ByteBuffer.allocateDirect(m_faceLists[i].size() * 3 * 2);
             forFaces.order(ByteOrder.nativeOrder());
             m_faceBuffers[i] = forFaces.asShortBuffer();
 
+            //for each face in the list split it into the three indices of the face and - 1 from each
+            //to make it work in an array format later
             for (String face : m_faceLists[i]) {
                 String indices[] = face.split(" ");
                 String set0[] = indices[1].split("/");
@@ -107,9 +120,11 @@ public class Mesh {
                 m_faceBuffers[i].put((short) (index1 - 1));
                 m_faceBuffers[i].put((short) (index2 - 1));
             }
+            //reset the position
             m_faceBuffers[i].position(0);
         }
 
+        //get the shader from the renderer (will create a new one if one does not exist)
         m_shader = TryOnRenderer.GetShader();
     }
 

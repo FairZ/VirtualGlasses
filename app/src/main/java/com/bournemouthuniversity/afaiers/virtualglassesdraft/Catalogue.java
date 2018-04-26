@@ -1,6 +1,5 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,19 +12,16 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/*
+    Fragment which handles the display and functions of the catalogue tab in the main activity
+*/
 public class Catalogue extends Fragment {
 
+    //used to store a list of available frames which is assigned to the recyclerView
     private List<Frame> m_frameList;
-    private Context m_context;
 
     public Catalogue() {
 
-    }
-
-    public void SetContext(Context _context)
-    {
-        m_context = _context;
     }
 
     @Override
@@ -40,7 +36,7 @@ public class Catalogue extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         //get the RecyclerView and fix its size
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.catalogue_view);
+        RecyclerView recyclerView = view.findViewById(R.id.catalogue_view);
         recyclerView.setHasFixedSize(true);
 
         //create a new grid layout manager and assign it to the recycler view
@@ -48,15 +44,16 @@ public class Catalogue extends Fragment {
         recyclerView.setLayoutManager(gridLayout);
 
         //initialise the frame list
-        InitializeFrameList();
+        InitialiseFrameList();
 
         //initialise and set the adapter for frames
         FrameAdapter adapter = new FrameAdapter(m_frameList);
         recyclerView.setAdapter(adapter);
     }
 
-    private void InitializeFrameList()
+    private void InitialiseFrameList()
     {
+        //initialise the frame list and assign all available glasses to it as well as their data
         m_frameList = new ArrayList<Frame>();
         m_frameList.add(new Frame("Model 1", R.drawable.catalogue_image_1, new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0.5f,0.5f,0.5f,1.0f},
                 new float[] {0.5f,0.5f,0.5f,1.0f},new float[] {0,0,0,0},R.raw.final1));

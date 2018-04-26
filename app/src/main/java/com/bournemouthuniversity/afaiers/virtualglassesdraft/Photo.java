@@ -1,9 +1,8 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
-/**
- * Created by Adam on 28/01/2018.
- */
-
+/*
+    Class to store the name and image file path of each photo
+*/
 class Photo {
     private String name;
     private String imagePath;

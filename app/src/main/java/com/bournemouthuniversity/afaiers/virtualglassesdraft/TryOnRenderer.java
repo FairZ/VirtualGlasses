@@ -8,17 +8,15 @@ import android.opengl.Matrix;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-/**
- * Created by Adam on 27/02/2018.
- */
-
+/*
+    OpenGL renderer which handles most openGL setup and calls
+    also captures the openGL frames and takes inputs from other classes to allow for customisation
+    and other drawing options
+*/
 public class TryOnRenderer implements GLSurfaceView.Renderer {
-
-    private static final String TAG = "Renderer";
 
     private int m_meshResourceID;
     private Context m_context;
@@ -41,7 +39,9 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+        //set the clear colour, note the alpha is 0.0f to clear to transparency
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        //enable required openGL functions
         GLES20.glEnable(GLES20.GL_CULL_FACE);
         GLES20.glCullFace(GLES20.GL_BACK);
         GLES20.glEnable( GLES20.GL_DEPTH_TEST );
@@ -49,32 +49,44 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
         GLES20.glDepthMask( true );
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        //initialise the model matrix to an identity matrix
         Matrix.setIdentityM(m_modelMatrix,0);
+        //create and store the mesh
         m_mesh = new Mesh(m_context, m_meshResourceID);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
+        //set the viewport to the correct size to avoid stretching
         GLES20.glViewport(0,0,width, height);
+        //set the width and height parameters
         m_width = width;
         m_height = height;
+        //determine the aspect ratio
         float ratio = (float)width / height;
+        //set up the projection matrix
         Matrix.perspectiveM(m_projectionMatrix,0,54,ratio,0.1f,1);
+        //the view matrix
         Matrix.setLookAtM(m_viewMatrix, 0, 0f, 0f, 0.5f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        //and their combination
         Matrix.multiplyMM(m_VPMatrix, 0, m_projectionMatrix, 0, m_viewMatrix, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 gl10) {
+        //update the colours of each part of the glasses
         m_activity.GetColours();
-        //clear colour buffer
+        //clear colour and depth buffer
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT);
+        //create the MVP matrix
         Matrix.multiplyMM(m_MVPMatrix,0, m_VPMatrix,0, m_modelMatrix,0);
-        //Drawing
+        //Draw the mesh
         m_mesh.Draw(m_MVPMatrix);
+        //if a picture is being taken capture the screen once drawing is done
         if(m_capture)
         {
             CaptureSurface();
+            //once the surface has been captured reset to false to avoid capturing each frame
             m_capture = false;
         }
     }
@@ -86,6 +98,7 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
 
     public static Shader GetShader()
     {
+        //if a shader does not exist create one
         if (m_shader == null)
         {
             m_shader = new Shader();
@@ -94,9 +107,13 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     }
 
     public void SetGlassesTransformation(float _yRot, float _zRot, float _scale, Vector2D _translation){
+        //first set z rotation
         Matrix.setRotateEulerM(m_modelMatrix,0,0,0,_zRot);
+        //then rotate by y rotation
         Matrix.rotateM(m_modelMatrix,0,_yRot,0,1,0);
+        //then scale
         Matrix.scaleM(m_modelMatrix,0,_scale,_scale,_scale);
+        //finally push position to mesh
         m_mesh.SetFramePosition(_translation);
     }
 
@@ -115,17 +132,27 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
     }
 
     private void CaptureSurface(){
+        //create a bytebuffer of the correct size
         ByteBuffer buffer = ByteBuffer.allocateDirect(m_width*m_height*4);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
+        //get the pixels of the gl surface
+        //NB: this function returns non-premultiplied colours (RGB*A) but android drawing requires
+        //premultiplied colours or overflows occur. To solve this, the colours of the fragment's colours
+        //are multiplied by the alpha in the fragment shader.
         GLES20.glReadPixels(0,0,m_width,m_height,GLES20.GL_RGBA,GLES20.GL_UNSIGNED_BYTE,buffer);
+        //reset the buffer to the beginning
         buffer.rewind();
+        //if a bitmap already exists delete it
         if(m_bmp != null)
         {
             m_bmp.recycle();
             m_bmp = null;
         }
+        //create a bitmap of the correct size
         m_bmp = Bitmap.createBitmap(m_width, m_height,Bitmap.Config.ARGB_8888);
+        //push the data to the bitmap
         m_bmp.copyPixelsFromBuffer(buffer);
+        //pixels are given upside down (due to openGL's coord system) so the bitmap must be rotated
         android.graphics.Matrix rotation = new android.graphics.Matrix();
         rotation.postRotate(180);
         m_bmp = Bitmap.createBitmap(m_bmp,0,0,m_width,m_height,rotation,true);
