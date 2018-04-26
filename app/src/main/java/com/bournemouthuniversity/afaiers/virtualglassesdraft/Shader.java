@@ -1,6 +1,7 @@
 package com.bournemouthuniversity.afaiers.virtualglassesdraft;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 /**
  * Created by Adam on 27/02/2018.
@@ -18,7 +19,7 @@ public class Shader {
                     "  vec4 position = MVP * vPosition;" +
                     "  position = position / position.w;" +
                     "  position += framePosition;" +
-                    "  position.w = 1.0f;" +
+                    "  position.w = 1.0;" +
                     "  gl_Position = position;" +
                     "}";
 
@@ -43,6 +44,12 @@ public class Shader {
         GLES20.glAttachShader(m_location, frag);
 
         GLES20.glLinkProgram(m_location);
+        int[] isLinked = new int[1];
+        GLES20.glGetProgramiv(m_location, GLES20.GL_LINK_STATUS, isLinked, 0);
+        if (isLinked[0] != GLES20.GL_TRUE) {
+            String error = GLES20.glGetProgramInfoLog(m_location);
+            Log.d("Shader linking", error);
+        }
     }
 
     public int GetLocation()
@@ -61,6 +68,8 @@ public class Shader {
         GLES20.glGetShaderiv(shaderLoc, GLES20.GL_COMPILE_STATUS, shaderSuccess, 0);
         if(shaderSuccess[0] == GLES20.GL_FALSE)
         {
+            String error = GLES20.glGetShaderInfoLog(shaderLoc);
+            Log.d("Shader compiling", error);
         }
 
         return shaderLoc;

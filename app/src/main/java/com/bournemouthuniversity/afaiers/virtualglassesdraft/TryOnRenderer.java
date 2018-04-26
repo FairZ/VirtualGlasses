@@ -79,7 +79,10 @@ public class TryOnRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-
+    public boolean GetCapturing()
+    {
+        return m_capture;
+    }
 
     public static Shader GetShader()
     {

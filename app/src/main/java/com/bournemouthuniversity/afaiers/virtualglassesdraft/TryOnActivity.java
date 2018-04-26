@@ -21,6 +21,7 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -545,7 +546,18 @@ public class TryOnActivity extends AppCompatActivity {
         m_camSource.takePicture(null, new CameraSource.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] bytes) {
+                String path = Environment.getExternalStorageDirectory().toString() + getResources().getString(R.string.folder_name);
+                File f = new File(path);
+                if (!f.exists())
+                {
+                    f.mkdirs();
+                }
                 Bitmap picture = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
+
+                while(m_tryOnRenderer.GetCapturing())
+                {
+                    Log.d("bitmapFactory", "waiting");
+                }
                 Bitmap result = CombineBitmaps(picture,m_tryOnRenderer.GetSurfaceBitmap());
                 try{
                     int iterator = 0;
@@ -584,12 +596,6 @@ public class TryOnActivity extends AppCompatActivity {
         canvas.drawBitmap(_back,backRect,backRect,null);
         canvas.drawBitmap(_front,frontRect,backRect,blendpainter);
         return combination;
-    }
-
-    private String GetTime(){
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH-mm_dd-MM-yyyy");
-        return sdf.format(cal.getTime());
     }
 
     private class FaceTrackerFactory implements MultiProcessor.Factory<Face> {
